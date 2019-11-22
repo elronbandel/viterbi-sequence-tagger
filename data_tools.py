@@ -7,11 +7,21 @@ WordTag = namedtuple('WordTag', ['word', 'tag'])
 """
 " loading the tagged sentences into list of WordTags lists
 """
-def load(file):
+def load_tagged_data(file):
     word_tag = lambda token : WordTag(token[0], token[1])
     with open(file, 'r') as f:
         return [[word_tag(token.split('/')) for token in line.split()] for line in f]
 
+
+def save_tagged_data(data, file):
+    with open(file, 'w+') as f:
+        for line in data:
+            f.write(' '.join(['/'.join([word, tag]) for word,tag in line]) + '\n')
+
+
+def load_untagged_data(file):
+    with open(file, 'r') as f:
+        return [line.split() for line in f]
 
 
 def words(sentence):
@@ -27,6 +37,13 @@ def count_words(data):
     for sentence in data:
         for word in words(sentence):
             counter[word] += 1
+    return counter
+
+def count_tags(data):
+    counter = Counter()
+    for sentence in data:
+        for tag in tags(sentence):
+            counter[tag] += 1
     return counter
 
 
@@ -67,7 +84,7 @@ def maniplulate_data_to_fit_vocab(data, vocab):
     return [[filter(word_tag) for word_tag in line] for line in data]
 
 def test():
-    data = load("data/ass1-tagger-train")
+    data = load_tagged_data("data/ass1-tagger-train")
     data = preprocess(data)
     for sentence in data:
         print(tags(sentence))
