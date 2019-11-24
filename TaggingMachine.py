@@ -1,4 +1,4 @@
-from data_tools import WordTag
+from old_code.data_tools import WordTag
 
 
 class TaggingMachine:
@@ -6,5 +6,5 @@ class TaggingMachine:
         self.tagger = tagger
 
     def tag(self, text):
-        return [[WordTag(word, tag) for word, tag in zip(line, self.tagger.tag(line))] for line in text]
+        return [[WordTag(word, tag) for word, tag in zip(line, self.tagger.tag(line)) ] for line in text]
 

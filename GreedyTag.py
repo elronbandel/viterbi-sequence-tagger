@@ -1,25 +1,22 @@
-from MLETrain import MLE, read_counter_from_file
-import data_tools
+from DataTools import *
 from TaggingMachine import TaggingMachine
-
-class GreedyTag:
-    def __init__(self, mle):
-        self.mle = mle
-
-    def tag(self, line):
-        raise NotImplemented
-
+from GreedyTagger import *
 
 def main(argv):
+    n_gram = 3
+    #args for test: data/ass1-tagger-dev-input q.mle e.mle ass1-tagger-dev-output data/ass1-tagger-dev
     prog , input_file, qmle_file, emle_file, output_file, extra_file = argv
     q_counter = read_counter_from_file(qmle_file)
     e_counter = read_counter_from_file(emle_file)
     mle = MLE(q_counter, e_counter)
-    gt = GreedyTag(mle)
+    dp = DataProcessor(n_gram=n_gram, add_start_symbols=True)
+    gt = GreedyTagger(mle)
     tagger = TaggingMachine(gt)
-    input = data_tools.load_untagged_data(input_file)
-    output = tagger.tag(input)
-    data_tools.save_tagged_data(output, output_file)
+    input = DataLoader.load_untagged_data(input_file)
+    data = dp.preprocess_untagged(input)
+    tagged = tagger.tag(data)
+    output = dp.deprocess(tagged)
+    DataLoader.save_tagged_data(output, output_file)
 
 
 

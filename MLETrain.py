@@ -1,5 +1,6 @@
+from DataTools import DataProcessor, DataLoader
+import DataTools
 from collections import Counter
-import data_tools
 
 
 def concat(words):
@@ -19,7 +20,7 @@ def count_emle(data):
 def count_qmle(data):
     counter = Counter()
     for line in data:
-        tags = data_tools.tags(line)
+        tags = DataTools.tags(line)
         for pair in zip(tags, tags[1:]):
             counter[concat(pair)] += 1
         for triplet in zip(tags, tags[1:], tags[2:]):
@@ -44,27 +45,46 @@ class MLE:
     def __init__(self, q_counter, e_counter):
         self.q_counter = q_counter
         self.e_counter = e_counter
-        self.generate_tags_counter()
+        self.generate_tags_counter_and_symbolizer()
 
-    def generate_tags_counter(self):
+
+    def generate_tags_counter_and_symbolizer(self):
         t_counter = Counter()
-        for word_tag, count in self.e_counter.elements():
-            t_counter[tag(word_tag)] += count
+        vocab = set()
+        for word_tag, count in self.e_counter.items():
+            word_tag = DataTools.str_to_wordtag(word_tag)
+            t_counter[word_tag.tag] += count
+            vocab.add(word_tag.word)
+        self.symbolizer = DataTools.get_symbolizer(vocab)
         self.t_counter = t_counter
+        self.tags = list(set(t_counter.keys()) - set([DataTools.START_SYM]))
 
-    def getQ(self, t1, t2, t3=None):
-        if t3:
-            return self.q_counter[concat((t1, t2, t3))] / self.q_counter[concat((t1, t2))]
-        else:
-            return self.q_counter[concat((t1, t2))] / self.q_counter[t1]
+    def getTags(self):
+        return self.tags
+
+    def getQ(self, t1, t2=None, t3=None):
+        try:
+            if t3:
+                return self.q_counter[concat((t1, t2, t3))] / self.q_counter[concat((t1, t2))]
+            elif t2:
+                return self.q_counter[concat((t1, t2))] / self.t_counter[t1]
+            else:  # case for general n n-gram:'
+                if len(t1[:-1]) == 1:
+                    return self.q_counter[concat(t1)] / self.t_counter[concat(t1[:-1])]
+                return self.q_counter[concat(t1)] / self.q_counter[concat(t1[:-1])]
+        except:
+            return 0
+
 
     def getE(self, word, tag):
-        return self.e_counter[concat((word, tag))] / self.q_counter[tag]
+        word = self.symbolizer(word)
+        return self.e_counter[concat((word, tag))] / self.t_counter[tag]
 
 def main(argv):
     prog , input_file, qmle_file, emle_file = argv
-    data = data_tools.load_tagged_data(input_file)
-    data = data_tools.preprocess(data)
+    dp = DataProcessor(n_gram=3, add_start_symbols=True)
+    data = DataLoader.load_tagged_data(input_file)
+    data = dp.preprocess(data)
     write_counter_to_file(count_qmle(data), qmle_file)
     write_counter_to_file(count_emle(data), emle_file)
 
