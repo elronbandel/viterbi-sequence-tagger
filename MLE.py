@@ -38,6 +38,7 @@ class MLE:
         self.init_q_matrix()
         #s_matrix - the probability of tag to be in the begginning of sentence
         self.possible_starts = dict()
+        self.dim2_possible_starts = list()
         self.init_possible_starts()
         #pre states = given state what are the states could be before it
         self.pre_states_dict = dict()
@@ -106,13 +107,25 @@ class MLE:
         s2p = self.q_counter[(start, start)]
         for i, tag in enumerate(self.tags):
             self.possible_starts[i] = self.q_counter[(start, start, tag)] / s2p
+        self.dim2_possible_starts = dict()
+        for i, p in self.possible_starts.items():
+            for j in range(self.n_tags):
+                try:
+                    res = (self.q_counter[(start, self.tags[i], self.tags[j])] / self.q_counter[(start, self.tags[i])]) * p
+                    if res > 0:
+                        self.dim2_possible_starts[(i, j)] = res
+                except:
+                    break
+        self.dim2_possible_starts = list(self.dim2_possible_starts.items())
+
+
 
     def init_pre_states_dict(self):
         for state in self.possible_states:
-            self.pre_states_dict[state] = list()
+            self.pre_states_dict[state] = set()
             for pre_state in  self.possible_states:
                 if pre_state[-1] == state[-2]:
-                    self.pre_states_dict[state].append(pre_state)
+                    self.pre_states_dict[state].add(pre_state)
 
     def init_wordidx2states(self):
         for word, tag in self.e_counter.keys():

@@ -4,7 +4,7 @@ from MLE import MLE, read_counter_from_file
 from old_code import data_tools
 from HMMGraph import *
 import numpy as np
-from pruned_viterbi_algorithm import viterbi_algorithm as viterbi
+from super_pruned_viterbi_algorithm import viterbi_algorithm as viterbi
 
 Record = namedtuple('Record', ['p','node', 'source'])
 
@@ -33,9 +33,10 @@ class ViterbiTagger:
         states_range = self.mle.n_tags
         state_dim = 2
         possible_starts = self.mle.possible_starts.items()
+        dim2_possible_starts = self.mle.dim2_possible_starts
 
 
-        result = viterbi(observations, states_range, state_dim, possible_starts, self.pre_states, self.observation_states , self.trans_prob, self.emission_prob)
+        result = viterbi(observations, states_range, state_dim, dim2_possible_starts, self.pre_states, self.observation_states , self.trans_prob, self.emission_prob)
         tags = [self.mle.tags[state[1]] for state in result]
         return tags
 
