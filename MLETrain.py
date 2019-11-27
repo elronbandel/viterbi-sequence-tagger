@@ -1,3 +1,5 @@
+import numpy as np
+
 from DataTools import DataProcessor, DataLoader
 import DataTools
 from collections import Counter
@@ -46,6 +48,9 @@ class MLE:
         self.q_counter = q_counter
         self.e_counter = e_counter
         self.generate_tags_counter_and_symbolizer()
+        self.build_q_matrix_and_possible_states_set()
+        self.build_s_matrix()
+
 
 
     def generate_tags_counter_and_symbolizer(self):
@@ -59,8 +64,35 @@ class MLE:
         self.t_counter = t_counter
         self.tags = list(set(t_counter.keys()) - set([DataTools.START_SYM]))
 
+    def build_q_matrix_and_possible_states_set(self):
+        n = len(self.tags)
+        self.q_matrix = np.zeros((n,n,n))
+        self.possible_states = list()
+        for i in range(n):
+            for j in range(n):
+                for k in range(n):
+                    self.q_matrix[i, j, k] = self.getQ(self.tags[i], self.tags[j], self.tags[k])
+                    if self.q_matrix[i, j, k] > 0:
+                        self.possible_states.append((i, j, k))
+
+    def build_s_matrix(self):
+        start = DataTools.START_SYM
+        n = len(self.tags)
+        self.s_matrix = np.zeros((n,))
+        for tag, i in enumerate(self.tags):
+            self.s_matrix[i] = self.getQ(start, start, tag)
+
+    #return the probability something will start with tag of index i
+    def getS(self, index):
+        return self.s_matrix[index]
+
     def getTags(self):
         return self.tags
+
+    #get q by (i, j, k) = state
+    def getQi(self, state):
+        return self.q3_matrix[state]
+
 
     def getQ(self, t1, t2=None, t3=None):
         try:

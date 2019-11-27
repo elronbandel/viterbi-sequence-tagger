@@ -12,13 +12,13 @@ class HMMGraph:
         return HMMNode(-1, sequence, [sequence[0]] * self.n_gram)
 
     def transitions(self, node):
-        if node.time_stamp + 1 + self.n_gram_offset >= len(node.sequence):
+        if node.time_stamp + self.n_gram >= len(node.sequence):
             return []
         return (HMMNode(node.time_stamp + 1, node.sequence, node.n_tags_history[1:] + [tag]) for tag in self.mle.tags)
 
     def transition_probability(self, node1, node2):
-        return self.mle.getE(node2.sequence[node2.time_stamp + self.n_gram_offset], node2.n_tags_history[-1]) * self.mle.getQ(node2.n_tags_history)
-
+        p = self.mle.getE(node2.sequence[node2.time_stamp + self.n_gram_offset], node2.n_tags_history[-1]) * self.mle.getQ(node2.n_tags_history)
+        return p
     @staticmethod
     def node_tag(node):
         return node.n_tags_history[-1]

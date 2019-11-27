@@ -94,6 +94,7 @@ def count_tags(data):
 
 
 def is_num(string):
+    # every number of the form: X,XXX,XXX.XXXXX
     regex = re.compile('^(([1-9]+[0-9]*)|([0])|([1-9]([0-9]?)([0-9]?)(([,][0-9]{3})*)))([.][0-9]*)?$')
     return bool(regex.match(string))
 
