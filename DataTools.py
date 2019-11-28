@@ -4,6 +4,7 @@ from collections import namedtuple, Counter
 UNK_SYM = "*UNK*"
 NUM_SYM = "*NUM*"
 START_SYM = "*START*"
+END_SYM = "*END*"
 SymbolsRegex = {
     "*NUM*" : re.compile('^(([1-9]+[0-9]*)|([0])|([1-9]([0-9]?)([0-9]?)(([,][0-9]{3})*)))([.][0-9]*)?$'),
     "*CAP*" : re.compile('^[A-Z]'),
@@ -21,27 +22,37 @@ WordTag = namedtuple('WordTag', ['word', 'tag'])
 class DataProcessor:
 
     #all the data tools correspond to the 2 initial parameters
-    def __init__(self, n_gram=3, add_start_symbols=False):
+    def __init__(self, n_gram=3, add_start_symbols=False, add_end_symbols=False, manipulate_unknowns=True):
         self.n_gram = n_gram
         self.start_sym = add_start_symbols
+        self.end_sym = add_end_symbols
+        self.manipulate = manipulate_unknowns
 
 
     def preprocess(self, data):
         data = apply_symbolizer(get_symbolizer(), data)
         if self.start_sym:
             data = add_start_symbol_to_data(data, n_gram=self.n_gram)
-        vocab = build_vocab(data)
-        return maniplulate_data_to_fit_vocab(data, vocab)
+        if self.end_sym:
+            data = add_end_symbol_to_data(data, n_gram=self.n_gram)
+        if self.manipulate:
+            vocab = build_vocab(data)
+            data = maniplulate_data_to_fit_vocab(data, vocab)
+        return data
 
     def preprocess_untagged(self, data):
         if self.start_sym:
             data = add_start_symbol_to_untagged_data(data, self.n_gram)
+        if self.end_sym:
+            data = add_end_symbol_to_untagged_data(data, self.n_gram)
         return data
 
 
     def deprocess(self, data):
         if self.start_sym:
             data = delete_start_symbol_from_data(data, self.n_gram)
+        if self.end_sym:
+            data = delete_end_symbol_from_data(data, self.n_gram)
         return data
 
 
@@ -149,6 +160,27 @@ def add_start_symbol_to_data(data, n_gram):
 def delete_start_symbol_from_data(data, n_gram):
     t = n_gram - 1
     return [line[t:] for line in data]
+
+def add_end_symbol_to_line_of_word_tags(line, n_gram):
+    t = n_gram - 1
+    return line + ([WordTag(END_SYM, END_SYM)] * t)
+
+
+def add_end_symbol_to_list_of_words(line, n_gram):
+    t = n_gram - 1
+    return line + ([END_SYM] * t)
+
+
+def add_end_symbol_to_untagged_data(data, n_gram):
+    return [add_end_symbol_to_list_of_words(line, n_gram) for line in data]
+
+
+def add_end_symbol_to_data(data, n_gram):
+    return [add_end_symbol_to_line_of_word_tags(line, n_gram) for line in data]
+
+def delete_end_symbol_from_data(data, n_gram):
+    t = n_gram - 1
+    return [line[:t] for line in data]
 
 
 def build_vocab(data, p=0.7):
