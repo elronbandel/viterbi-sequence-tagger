@@ -1,8 +1,8 @@
-from collections import Counter, deque, namedtuple
+from collections import deque
 
 from MLETrain import MLE, read_counter_from_file
 from old_code import data_tools
-from HMMGraph import *
+from old_code.HMMGraph import *
 
 Record = namedtuple('Record', ['p','node', 'source'])
 

@@ -62,9 +62,11 @@ class MLE:
 
     def init_tags_collections(self):
         self.tags = set()
+        self.tags_total_count = 0
         for word_tag, count in self.e_counter.items():
             self.t_counter[word_tag[1]] += count
             self.tags.add(word_tag[1])
+            self.tags_total_count += count
         self.tags.remove(DataTools.START_SYM)
         self.tags = list(self.tags)
         self.n_tags = len(self.tags)
@@ -98,8 +100,8 @@ class MLE:
                     t1, t2, t3 = self.tags[i], self.tags[j], self.tags[k]
                     a = self.q_counter[(t1, t2, t3)] / self.q_counter[(t1, t2)]
                     b = self.q_counter[(t2, t3)] / self.t_counter[t2]
-
-                    self.q_matrix[i, j, k] = 0.7 * a + 0.2 * b + 0.1
+                    c = self.t_counter[t2] / self.tags_total_count
+                    self.q_matrix[i, j, k] = 0.7 * a + 0.2 * b + 0.1 * c
 
 
     def init_possible_starts(self):

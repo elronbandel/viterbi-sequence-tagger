@@ -1,6 +1,6 @@
-from MLETrain import MLE, read_counter_from_file
-from old_code import data_tools
-from HMMGraph import *
+from MLE import MLE, read_counter_from_file
+import operator
+
 
 #gosh
 
@@ -11,18 +11,34 @@ class GreedyTagger:
         self.n_gram_offset = n_gram - 1
 
     def tag(self, line):
-        g = HMMGraph(self.mle, self.n_gram)
-        node = g.start_node(line)
-        tags = [line[0]] * (self.n_gram_offset - 1)
-        while node:
-            tags.append(g.node_tag(node))
-            p_max, next = 0, None
-            for child in g.transitions(node):
-                p = g.transition_probability(node, child)
-                if p_max <= p:
-                    p_max, next = p, child
-            node = next
-        return tags
+        observations = [self.mle.word2idx[self.mle.symbolizer(word)] for word in line]
+        return self.greedy(observations)
+
+    def greedy(self, observations):
+        tags = list()
+        p_first, first_tag = max(
+            ((p * self.mle.getEi(observations[0], tag), tag) for tag, p in self.mle.possible_starts.items()),
+            key=operator.itemgetter(0))
+        tags.append(first_tag)
+        possible_nexts = list(filter(lambda state: state[0][0] == first_tag, self.mle.dim2_possible_starts))
+        try:
+            p, next_state = max((((p * self.mle.getEi(observations[1], state[0])), state) for state, p in possible_nexts),
+                            key=operator.itemgetter(0))
+        except:
+            return [self.mle.tags[tag] for tag in tags]
+        # p, next_state = max(((p_state * self.mle.getEi(observations[0], state[0]) * self.mle.getEi(observations[1], state[1]) ,state) for state, p_state in self.mle.dim2_possible_starts), key=operator.itemgetter(0))
+
+        tags.append(next_state[1])
+        for observation in observations[2:]:
+            p, tag = max(
+                (((self.mle.getEi(observation, tag) * self.mle.getQi(next_state[0], next_state[1], tag)), tag) for tag
+                 in range(self.mle.n_tags)), key=operator.itemgetter(0))
+            next_state = (next_state[1], tag)
+            tags.append(next_state[1])
+
+        return [self.mle.tags[tag] for tag in tags]
+
+
 
 
 def test():
@@ -30,9 +46,8 @@ def test():
     e_counter = read_counter_from_file("e.mle")
     mle = MLE(q_counter, e_counter)
     line = "he walked home quickly".split()
-    line_with_start_sym = data_tools.add_start_symbol_to_list_of_words(line, n_gram=3)
     tagger = GreedyTagger(mle)
-    print(tagger.tag(line_with_start_sym))
+    print(tagger.tag(line))
 
 
 

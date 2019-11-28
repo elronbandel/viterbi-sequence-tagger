@@ -13,7 +13,7 @@ def viterbi_algorithm(observations, states_range, state_dimension, dim2_possible
 
     #forwared computation
     assigned_states = set()
-    if len(observations) > 1:
+    if n_o > 1:  #fix: the case of only one word
         for state, p_state in dim2_possible_starts:
             res = emission_prob(observations[0], (state[0],)) * emission_prob(observations[1], state) * p_state
             if res > 0:
@@ -40,8 +40,11 @@ def viterbi_algorithm(observations, states_range, state_dimension, dim2_possible
 
     #backwared computation
     X = np.empty(n_o, dtype=object)
-    X[-1] = np.unravel_index(T1[-1].argmax(), T1[-1].shape)
-    for i in reversed(range(1, n_o)):
-        X[i - 1] = T2[(i,) + X[i]]
-    return X
+    try:
+        X[-1] = np.unravel_index(T1[-1].argmax(), T1[-1].shape)
+        for i in reversed(range(1, n_o)):
+            X[i - 1] = T2[(i,) + X[i]]
+    except:
+        return None #in case of failour
+    return [x[1] for x in X]
 

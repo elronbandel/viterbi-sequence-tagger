@@ -4,6 +4,16 @@ from collections import namedtuple, Counter
 UNK_SYM = "*UNK*"
 NUM_SYM = "*NUM*"
 START_SYM = "*START*"
+SymbolsRegex = {
+    "*NUM*" : re.compile('^(([1-9]+[0-9]*)|([0])|([1-9]([0-9]?)([0-9]?)(([,][0-9]{3})*)))([.][0-9]*)?$'),
+    "*CAP*" : re.compile('^[A-Z]'),
+    "*ING*" : re.compile(".*ing$"),
+    "*HYP*" : re.compile('.*[-].*'),
+    "*CNUM*" : re.compile('.*[0-9].*'),
+    "*UNK2*" : re.compile('^.{1,2}$'),
+    "*UNK4*" : re.compile('^.{3,4}$'),
+    "*UNK8*" : re.compile('^.{5,6,7,8}$')
+}
 
 WordTag = namedtuple('WordTag', ['word', 'tag'])
 
@@ -105,6 +115,9 @@ def get_symbolizer(vocab=None):
             return NUM_SYM
         if vocab:
             if word not in vocab:
+                for symbol, regex in SymbolsRegex.items():
+                    if bool(regex.match(word)):
+                        return symbol
                 return UNK_SYM
         return word
     return symbolizer
@@ -138,7 +151,7 @@ def delete_start_symbol_from_data(data, n_gram):
     return [line[t:] for line in data]
 
 
-def build_vocab(data, p=0.8):
+def build_vocab(data, p=0.7):
     count = count_words(data)
     threshold = int(p * len(count))
     most_common = count.most_common()[:threshold]
@@ -146,9 +159,8 @@ def build_vocab(data, p=0.8):
     return vocab
 
 def maniplulate_data_to_fit_vocab(data, vocab):
+    symbolizer = get_symbolizer(vocab)
     def filter(word_tag):
-        if word_tag.word in vocab:
-            return word_tag
-        return WordTag(UNK_SYM, word_tag.tag)
+        return WordTag(symbolizer(word_tag.word), word_tag.tag)
     return [[filter(word_tag) for word_tag in line] for line in data]
 

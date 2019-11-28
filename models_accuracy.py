@@ -6,7 +6,7 @@ from DataTools import DataLoader
 
 def main():
     dev = DataLoader.load_tagged_data("data/ass1-tagger-dev")
-    pred = DataLoader.load_tagged_data("ass1-viterbi-dev-output")
+    pred = DataLoader.load_tagged_data("ass1-tagger-dev-output")
     correct = 0
     sum = 0
     for line_dev, line_pred in zip(dev, pred):

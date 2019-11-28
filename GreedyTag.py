@@ -9,7 +9,7 @@ def main(argv):
     q_counter = read_counter_from_file(qmle_file)
     e_counter = read_counter_from_file(emle_file)
     mle = MLE(q_counter, e_counter)
-    dp = DataProcessor(n_gram=n_gram, add_start_symbols=True)
+    dp = DataProcessor(n_gram=n_gram, add_start_symbols=False)
     gt = GreedyTagger(mle)
     tagger = TaggingMachine(gt)
     input = DataLoader.load_untagged_data(input_file)
