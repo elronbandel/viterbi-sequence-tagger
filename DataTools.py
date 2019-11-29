@@ -6,14 +6,14 @@ NUM_SYM = "*NUM*"
 START_SYM = "*START*"
 END_SYM = "*END*"
 SymbolsRegex = {
-    "*NUM*" : re.compile('^(([1-9]+[0-9]*)|([0])|([1-9]([0-9]?)([0-9]?)(([,][0-9]{3})*)))([.][0-9]*)?$'),
-    "*CAP*" : re.compile('^[A-Z]'),
-    "*ING*" : re.compile(".*ing$"),
-    "*HYP*" : re.compile('.*[-].*'),
-    "*CNUM*" : re.compile('.*[0-9].*'),
-    "*UNK2*" : re.compile('^.{1,2}$'),
-    "*UNK4*" : re.compile('^.{3,4}$'),
-    "*UNK8*" : re.compile('^.{5,6,7,8}$')
+    "^NUM" : re.compile('^(([1-9]+[0-9]*)|([0])|([1-9]([0-9]?)([0-9]?)(([,][0-9]{3})*)))([.][0-9]*)?$'),
+    "^CAP" : re.compile('^[A-Z]'),
+    "^ING" : re.compile(".*ing$"),
+    "^HYP" : re.compile('.*[-].*'),
+    "^CNUM" : re.compile('.*[0-9].*'),
+    "^UNK2" : re.compile('^.{1,2}$'),
+    "^UNK4" : re.compile('^.{3,4}$'),
+    "^UNK8" : re.compile('^.{5,6,7,8}$')
 }
 
 WordTag = namedtuple('WordTag', ['word', 'tag'])
